@@ -61,7 +61,7 @@ namespace RouteIF
             {
                 m_notifyIcon.Visible = false;
                 ShowInTaskbar = true;
-                m_toolStripComboBox.Visible = true;
+                m_toolStripComboBox.Visible = false;
                 FormBorderStyle = m_initialFormBorderStyle;
             }
         }
