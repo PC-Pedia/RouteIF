@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
@@ -8,6 +9,7 @@ namespace RouteIF
     public partial class RouteIF : Form
     {
         private BindingList<NetInterface> m_bindingList = new BindingList<NetInterface>();
+        private Dictionary<string, string> m_DescriptionToDefaultGateway = new Dictionary<string, string>();
         private FormBorderStyle m_initialFormBorderStyle;
         private bool m_bChanging;
 
@@ -32,7 +34,10 @@ namespace RouteIF
 
         private NetInterface GetNetInterfaceByDefaultGetway(string sDefaultGetway)
         {
-            return m_bindingList.Single(s => s.DefaultGateway == sDefaultGetway);
+            if (string.IsNullOrEmpty(sDefaultGetway))
+                return m_bindingList.FirstOrDefault();
+            else
+                return m_bindingList.Single(s => s.DefaultGateway == sDefaultGetway);
         }
 
         private void Reload()
@@ -40,11 +45,24 @@ namespace RouteIF
             m_bindingList.Clear();
             foreach (NetInterface ni in Command.GetNetInterfaces())
             {
+                if (string.IsNullOrEmpty(ni.DefaultGateway))
+                {
+                    if (m_DescriptionToDefaultGateway.ContainsKey(ni.Description))
+                        ni.DefaultGateway = m_DescriptionToDefaultGateway[ni.Description];
+                    else
+                    {
+                        MessageBox.Show("Default Gateway is empty for:\n  " + ni.Description, "Default Gateway",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        continue;
+                    }
+                }
+                else
+                    m_DescriptionToDefaultGateway[ni.Description] = ni.DefaultGateway;
                 m_bindingList.Add(ni);
             }
             string sDefaultGetway = Command.GetDefaultGetway();
             NetInterface netInterface = GetNetInterfaceByDefaultGetway(sDefaultGetway);
-            ChangeSelection(m_cbNetInterface.FindString(netInterface.Description));
+            ChangeSelection(m_cbNetInterface.FindString(netInterface.Description), string.IsNullOrEmpty(sDefaultGetway) ? netInterface : null);
         }
 
         private void OnResize(FormWindowState windowState)

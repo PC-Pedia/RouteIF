@@ -72,7 +72,7 @@ namespace RouteIF
                 string line;
                 while ((line = reader.ReadLine()) != null)
                 {
-                    if (line.Contains("0.0.0.0"))
+                    if (line.Trim().StartsWith("0.0.0.0"))
                     {
                         return line.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries)[2].Trim();
                     }
@@ -83,7 +83,8 @@ namespace RouteIF
 
         static public bool SetDefaultGetway(string sDefaultGetway)
         {
-            string output = ExecuteCmd("route change 0.0.0.0 mask 0.0.0.0 " + sDefaultGetway);
+            string output = ExecuteCmd("route delete 0.0.0.0 mask 0.0.0.0");
+            output = ExecuteCmd("route add 0.0.0.0 mask 0.0.0.0 " + sDefaultGetway);
             return output.Contains("OK!");
         }
     }
