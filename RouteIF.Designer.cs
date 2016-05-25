@@ -93,6 +93,7 @@
             this.MaximizeBox = false;
             this.Name = "RouteIF";
             this.Text = "RouteIF";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.RouteIF_FormClosing);
             this.Load += new System.EventHandler(this.RouteIF_Load);
             this.Resize += new System.EventHandler(this.RouteIF_Resize);
             this.m_contextMenuStrip.ResumeLayout(false);

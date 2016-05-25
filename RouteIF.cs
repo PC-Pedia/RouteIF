@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -8,6 +9,7 @@ namespace RouteIF
 {
     public partial class RouteIF : Form
     {
+        private string m_sFavorite;
         private BindingList<NetInterface> m_bindingList = new BindingList<NetInterface>();
         private Dictionary<string, string> m_DescriptionToDefaultGateway = new Dictionary<string, string>();
         private FormBorderStyle m_initialFormBorderStyle;
@@ -16,6 +18,7 @@ namespace RouteIF
         public RouteIF()
         {
             InitializeComponent();
+            m_sFavorite = ConfigurationManager.AppSettings["Favorite"];
             m_cbNetInterface.DisplayMember = "Description";
             m_cbNetInterface.ValueMember = "DefaultGateway";
             m_cbNetInterface.DataSource = m_bindingList;
@@ -89,7 +92,9 @@ namespace RouteIF
             m_bChanging = true;
             if (selectedNetInterface != null)
             {
-                bool bOk = Command.SetDefaultGetway(selectedNetInterface.DefaultGateway);
+                if (!Command.SetDefaultGetway(selectedNetInterface.DefaultGateway))
+                    MessageBox.Show("Default Gateway is not set correctly to:\n  " + selectedNetInterface.Description, "Default Gateway",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             m_cbNetInterface.SelectedIndex = index;
             m_toolStripComboBox.ComboBox.SelectedIndex = index;
@@ -99,6 +104,18 @@ namespace RouteIF
         private void RouteIF_Load(object sender, EventArgs e)
         {
             Reload();
+        }
+
+        private void RouteIF_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (string.IsNullOrEmpty(m_sFavorite))
+                return;
+            NetInterface netInterface = (NetInterface)m_cbNetInterface.SelectedItem;
+            if (m_sFavorite != netInterface.Description)
+            {
+                netInterface = GetNetInterfaceByDescription(m_sFavorite);
+                ChangeSelection(m_cbNetInterface.FindString(m_sFavorite), netInterface);
+            }
         }
 
         private void m_cbNetInterface_SelectedIndexChanged(object sender, EventArgs e)
